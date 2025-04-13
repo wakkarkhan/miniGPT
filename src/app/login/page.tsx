@@ -10,10 +10,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { showToast } = useToast();
 
-  const handleAADLogin = async () => {
+  const handleAADLogin = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default button behavior
     setIsLoading(true);
     try {
-      // This will redirect to Azure AD login page
       await auth.login();
     } catch (error) {
       console.error('Login failed:', error);
@@ -25,6 +25,7 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-[#0a0a1b] flex flex-col items-center justify-center p-4">
@@ -47,6 +48,7 @@ export default function LoginPage() {
 
         {/* Login Button */}
         <button
+          type="button"
           onClick={handleAADLogin}
           disabled={isLoading}
           className={`w-full bg-[#2d2e3a] hover:bg-[#3d3e4a] text-white rounded-lg px-4 py-3 flex items-center justify-center space-x-3 transition-colors ${

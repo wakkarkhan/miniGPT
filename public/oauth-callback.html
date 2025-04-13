@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth Callback</title>
+    <script>
+        window.onload = function() {
+            // Send the current URL to parent window
+            window.parent.postMessage(window.location.href, '*');
+        };
+    </script>
+</head>
+<body>
+    Processing OAuth callback...
+</body>
+</html> 

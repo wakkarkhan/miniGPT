@@ -7,6 +7,8 @@ export default function CallbackPage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
+
+    console.log('************ code **********:', code)
     
     if (code) {
       auth.handleCallback(code).catch(console.error);
