@@ -62,6 +62,7 @@ export const auth = {
       const popup = clientAuth.openPopup(authUrl);
       if (!popup) throw new Error('Popup blocked');
 
+      
       // Wait for code from popup
       const code = await clientAuth.listenForCode(popup);
       console.log('Got auth code:', code);
