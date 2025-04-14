@@ -36,14 +36,24 @@ export default function Home() {
   const router = useRouter();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  // Set initial sidebar state and handle resize
+  // Update the resize handler
   useEffect(() => {
     const handleResize = () => {
-      setSidebarOpen(window.innerWidth >= 640);
+      if (window.innerWidth >= 640) {
+        // For desktop, maintain user's preference
+        setSidebarOpen((prev) => prev);
+      } else {
+        // For mobile, always start closed
+        setSidebarOpen(false);
+      }
     };
 
-    // Set initial state
-    handleResize();
+    // Set initial state based on screen size
+    if (window.innerWidth >= 640) {
+      setSidebarOpen(true);
+    } else {
+      setSidebarOpen(false);
+    }
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -233,7 +243,7 @@ export default function Home() {
   };
 
   const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+    setSidebarOpen((prev) => !prev);
   };
 
   // Toggle theme function

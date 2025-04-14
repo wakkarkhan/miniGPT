@@ -96,77 +96,74 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
 
   return (
     <>
-      <div className={`
-        fixed sm:relative
-        inset-y-0 left-0
-        z-30
-        h-full flex flex-col
-        w-[280px] sm:w-72
-        bg-[var(--app-sidebar-bg)]
-        border-r border-[var(--app-sidebar-border)]
-        transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'}
-      `}>
-        {/* Mobile Close Button */}
-        <button 
-          onClick={() => onToggleSidebar?.()}
-          className="absolute right-2 top-2 p-2 rounded-full hover:bg-[var(--app-message-bg)] sm:hidden"
-          title="Close sidebar"
-        >
-          <X size={20} className="text-[var(--app-text)]" />
-        </button>
-
-      {/* Search bar */}
-        {/* <div className="p-4 border-b border-[var(--app-sidebar-border)]">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search size={16} className="text-[var(--app-text)] opacity-50" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search conversations"
-            className="w-full py-2 pl-10 pr-4 rounded-md bg-[var(--app-message-bg)] text-[var(--app-text)] border-none focus:outline-none focus:ring-1 focus:ring-[var(--app-button-bg)] text-sm"
-          />
-        </div>
-        </div> */}
-
-      {/* Chat History */}
-        <div className="flex-1 overflow-y-auto py-2 pb-4">
-          {/* <div className="px-4 py-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[var(--app-text)] opacity-70">Recent Conversations</h2>
+      {/* Sidebar */}
+      <div 
+        className={`fixed sm:relative inset-y-0 left-0 z-30 w-72 bg-[var(--app-sidebar-bg)] border-r border-[var(--app-sidebar-border)] 
+                   transform transition-transform duration-300 ease-in-out
+                   ${sidebarOpen ? 'translate-x-0' : '-translate-x-full sm:-translate-x-72'}`}
+      >
+        {/* Sidebar content */}
+        <div className="flex flex-col h-full">
+          {/* Mobile Close Button */}
           <button 
-            onClick={onStartNewChat}
-              className="text-xs px-2 py-1 rounded-md bg-[var(--app-button-bg)] text-white hover:bg-[var(--app-button-hover)] transition-colors ml-auto"
+            onClick={() => onToggleSidebar?.()}
+            className="absolute right-2 top-2 p-2 rounded-full hover:bg-[var(--app-message-bg)] sm:hidden"
+            title="Close sidebar"
           >
-            New Chat
+            <X size={20} className="text-[var(--app-text)]" />
           </button>
+
+          {/* Search bar */}
+          {/* <div className="p-4 border-b border-[var(--app-sidebar-border)]">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={16} className="text-[var(--app-text)] opacity-50" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search conversations"
+              className="w-full py-2 pl-10 pr-4 rounded-md bg-[var(--app-message-bg)] text-[var(--app-text)] border-none focus:outline-none focus:ring-1 focus:ring-[var(--app-button-bg)] text-sm"
+            />
+          </div>
           </div> */}
-          
-          {hasChats ? (
-            <>
-              {renderChatGroup('Today', chatHistory.Today)}
-              {renderChatGroup('Yesterday', chatHistory.Yesterday)}
-              {renderChatGroup('Previous 7 Days', chatHistory["Previous 7 Days"])}
-            </>
-          ) : (
-            <div className="px-4 py-8 text-center">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-[var(--app-message-bg)] rounded-full flex items-center justify-center mb-4">
-                <MessageSquare size={20} className="text-[var(--app-text)] opacity-50 sm:hidden" />
-                <MessageSquare size={24} className="text-[var(--app-text)] opacity-50 hidden sm:block" />
-              </div>
-              <p className="text-[var(--app-text)] opacity-70 text-xs sm:text-sm">No conversations yet</p>
-            <p className="text-[var(--app-text)] opacity-50 text-xs mt-1">Start a new chat to begin</p>
+
+          {/* Chat History */}
+          <div className="flex-1 overflow-y-auto py-2 pb-4">
+            {/* <div className="px-4 py-2 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-[var(--app-text)] opacity-70">Recent Conversations</h2>
             <button 
               onClick={onStartNewChat}
-                className="mt-4 px-3 sm:px-4 py-2 bg-[var(--app-button-bg)] text-white rounded-md hover:bg-[var(--app-button-hover)] transition-colors text-xs sm:text-sm"
+                className="text-xs px-2 py-1 rounded-md bg-[var(--app-button-bg)] text-white hover:bg-[var(--app-button-hover)] transition-colors ml-auto"
             >
-              Start New Chat
+              New Chat
             </button>
-          </div>
-        )}
-      </div>
-      
-      {/* Footer */}
+            </div> */}
+            
+            {hasChats ? (
+              <>
+                {renderChatGroup('Today', chatHistory.Today)}
+                {renderChatGroup('Yesterday', chatHistory.Yesterday)}
+                {renderChatGroup('Previous 7 Days', chatHistory["Previous 7 Days"])}
+              </>
+            ) : (
+              <div className="px-4 py-8 text-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-[var(--app-message-bg)] rounded-full flex items-center justify-center mb-4">
+                  <MessageSquare size={20} className="text-[var(--app-text)] opacity-50 sm:hidden" />
+                  <MessageSquare size={24} className="text-[var(--app-text)] opacity-50 hidden sm:block" />
+                </div>
+                <p className="text-[var(--app-text)] opacity-70 text-xs sm:text-sm">No conversations yet</p>
+              <p className="text-[var(--app-text)] opacity-50 text-xs mt-1">Start a new chat to begin</p>
+              <button 
+                onClick={onStartNewChat}
+                  className="mt-4 px-3 sm:px-4 py-2 bg-[var(--app-button-bg)] text-white rounded-md hover:bg-[var(--app-button-hover)] transition-colors text-xs sm:text-sm"
+              >
+                Start New Chat
+              </button>
+            </div>
+          )}
+        </div>
+        
+        {/* Footer */}
         {/* <div className="p-3 sm:p-4 border-t border-[var(--app-sidebar-border)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -188,7 +185,8 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
           </div>
         </div> */}
 
-        {children}
+          {children}
+        </div>
       </div>
 
       {/* Mobile Overlay Background */}
