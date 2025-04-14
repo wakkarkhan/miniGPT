@@ -38,7 +38,7 @@ export const chatService = {
     console.log("token", token);
 
     if (!token) {
-      throw new Error("No authentication token found");
+      // throw new Error("No authentication token found");
     }
 
     const response = await fetch(
@@ -61,7 +61,7 @@ export const chatService = {
   async getSingleChat(chatId: string): Promise<SingleChatResponse> {
     const token = auth.getToken();
     if (!token) {
-      throw new Error("No authentication token found");
+      // throw new Error("No authentication token found");
     }
 
     const response = await fetch(`${API_BASE_URL}/api/chat/${chatId}`, {
@@ -81,10 +81,10 @@ export const chatService = {
   async createNewChat(chatTitle: string): Promise<CreateChatResponse> {
     const token = auth.getToken();
     if (!token) {
-      throw new Error("No authentication token found");
+      // throw new Error("No authentication token found");
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/chat`, {
+    const response = await fetch(`https://stg-llmbe.werifaid.com/api/chat/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzOTY1ODQyNC1mZmNlLTQzZTUtOWUxYy0xMjAyNjFiYWFhNDQiLCJleHAiOjE3NDY0MDg0Nzd9.53T4W0Dqzq-XEj2LCO7VRZZsgs44rOTw3B5TJYMn_Yk`,
@@ -94,6 +94,28 @@ export const chatService = {
         title: chatTitle,
       }),
     });
+    console.log(response);
+    
+    if (!response.ok) {
+      throw new Error("Failed to create chat");
+    }
+
+    return response.json();
+  },
+  async submitFeedback(messageId:string, feedback:any = 0): Promise<CreateChatResponse> {
+    const token = auth.getToken();
+    if (!token) {
+      // throw new Error("No authentication token found");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/chat/message/${messageId}/feedback?feedback=${feedback}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzOTY1ODQyNC1mZmNlLTQzZTUtOWUxYy0xMjAyNjFiYWFhNDQiLCJleHAiOjE3NDY0MDg0Nzd9.53T4W0Dqzq-XEj2LCO7VRZZsgs44rOTw3B5TJYMn_Yk`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
 
     if (!response.ok) {
       throw new Error("Failed to create chat");
@@ -102,3 +124,9 @@ export const chatService = {
     return response.json();
   },
 };
+
+
+
+// export const submitFeedback = (messageId, feedback = 0) => {
+//   return putApi(`/chat/message/${messageId}/feedback?feedback=${feedback}`, {});
+// };
