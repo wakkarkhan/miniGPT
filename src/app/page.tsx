@@ -353,13 +353,13 @@ export default function Home() {
             </button>
           </div>
           
-          <button 
-            onClick={toggleTheme}
+            <button 
+              onClick={toggleTheme}
             className="hidden sm:block p-1 sm:p-2 rounded-full bg-[var(--app-message-bg)] hover:bg-opacity-80 text-[var(--app-text)]"
-            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
           
           <div className="relative user-menu-container">
             <button 
@@ -388,7 +388,7 @@ export default function Home() {
                   >
                     <LogOut size={16} className="mr-2" />
                     Logout
-                  </button>
+          </button>
                 </div>
               </div>
             )}
@@ -398,12 +398,12 @@ export default function Home() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <ChatHistorySidebar 
-          chatHistory={chatHistory}
-          activeChat={activeChat}
-          sidebarOpen={sidebarOpen}
-          onSelectChat={handleSelectChat}
-          onStartNewChat={handleStartNewChat}
+          <ChatHistorySidebar 
+            chatHistory={chatHistory}
+            activeChat={activeChat}
+            sidebarOpen={sidebarOpen}
+            onSelectChat={handleSelectChat}
+            onStartNewChat={handleStartNewChat}
           onToggleSidebar={toggleSidebar}
         >
           {/* Add theme toggle to sidebar footer for mobile */}

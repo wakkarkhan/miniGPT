@@ -98,6 +98,7 @@ function CodeBlock({ language, value }: { language: string; value: string }) {
   const { showToast } = useToast();
 
   const copyToClipboard = async () => {
+    console.log("Copying to clipboard", value);
     try {
       // Try the modern Clipboard API first
       await navigator.clipboard.writeText(value);
