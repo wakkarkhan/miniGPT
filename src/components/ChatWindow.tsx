@@ -225,8 +225,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <button
               type="submit"
               disabled={!inputMessage.trim() || isLoading}
-              className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 p-1.5 sm:p-2 rounded-full bg-[var(--app-button-bg)] text-white disabled:opacity-50"
+              className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 p-1.5 sm:p-2 bg-[var(--app-button-bg)] text-white disabled:opacity-50 mr-2"
               title="Send message"
+              style={{ background: 'var(--app-button-gradient)', borderRadius:'10px'}}
             >
               <ArrowUp size={18} className="sm:hidden" />
               <ArrowUp size={20} className="hidden sm:block" />
