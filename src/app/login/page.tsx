@@ -4,11 +4,14 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { auth } from '@/services/auth';
 import { useToast } from '@/components/toast-context';
+import { useAuth } from '@/hooks/useAuth'
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { showToast } = useToast();
+
+  useAuth(false) // false means don't require auth for this page
 
   const handleAADLogin = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent default button behavior

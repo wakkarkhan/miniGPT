@@ -167,6 +167,20 @@ body {
   animation: slideUp 0.3s ease-out forwards;
 }
 
+/* Sidebar transition */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.sidebar-backdrop {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
 /* Custom styles for the app */
 .dark {
   --app-bg: #1a1b26;

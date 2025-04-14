@@ -6,29 +6,48 @@ import ChatWindow from '@/components/ChatWindow';
 import { Message } from "@/components/MessageBubble";
 import { getChatCompletion, streamChatCompletion } from "@/services/openai";
 import { useToast } from "@/components/toast-context";
-import ChatHistorySidebar, { ChatHistoryItem } from '@/components/ChatHistorySidebar';
-import { Menu, User, PlusCircle, Moon, Sun } from 'lucide-react';
+import ChatHistorySidebar, { GroupedChats, ChatItem } from '@/components/ChatHistorySidebar';
+import { Menu, User, PlusCircle, Moon, Sun, LogOut, Edit2 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import { useRouter } from "next/navigation";
 import { auth } from "@/services/auth";
+import { useAuth } from '@/hooks/useAuth'
+import { chatService } from '@/services/chat'
+import Image from 'next/image';
 
 export default function Home() {
+  useAuth() // This will handle auth checks and redirects
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [useStream, setUseStream] = useState(false);
   const { showToast } = useToast();
-  const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([
-    { id: '1', title: 'Previous chat about React', timestamp: new Date(Date.now() - 86400000) },
-    { id: '2', title: 'TypeScript help', timestamp: new Date(Date.now() - 43200000) },
-    { id: '3', title: 'Next.js routing question', timestamp: new Date() },
-  ]);
-  const [activeChat, setActiveChat] = useState<string | null>('3');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [chatHistory, setChatHistory] = useState<GroupedChats>({
+    Today: [],
+    Yesterday: [],
+    "Previous 7 Days": []
+  });
+  const [activeChat, setActiveChat] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const { theme, setTheme } = useTheme();
   const router = useRouter();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // Set initial sidebar state and handle resize
+  useEffect(() => {
+    const handleResize = () => {
+      setSidebarOpen(window.innerWidth >= 640);
+    };
+
+    // Set initial state
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Load API key from localStorage on component mount
   useEffect(() => {
@@ -39,11 +58,59 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Check if user is authenticated
-    if (!auth.isAuthenticated()) {
-      router.push('/login');
-    }
-  }, [router]);
+    const fetchChats = async () => {
+      try {
+        const response = await chatService.getChats();
+        const groupedData = groupByDate(response.chats);
+        setChatHistory(groupedData);
+        
+        // Set active chat to the most recent one if exists
+        const allChats = [...groupedData.Today, ...groupedData.Yesterday, ...groupedData["Previous 7 Days"]];
+        if (allChats.length > 0) {
+          setActiveChat(allChats[0].id);
+        }
+      } catch (error) {
+        console.error('Failed to fetch chats:', error);
+        showToast('Failed to load chat history', 'error', 5000);
+      }
+    };
+
+    fetchChats();
+  }, []);
+
+  const groupByDate = (chats: any[]): GroupedChats => {
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10); // yyyy-mm-dd
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+    const previous7Start = new Date(now);
+    previous7Start.setDate(now.getDate() - 7);
+
+    const groups: GroupedChats = {
+      Today: [],
+      Yesterday: [],
+      "Previous 7 Days": []
+    };
+
+    console.log("chats", chats);
+
+    chats.forEach((chat) => {
+      const itemDate = new Date(chat.updatedAt);
+      const itemDateStr = itemDate.toISOString().slice(0, 10);
+
+      if (itemDateStr === today) {
+        groups.Today.push(chat);
+      } else if (itemDateStr === yesterdayStr) {
+        groups.Yesterday.push(chat);
+      } else if (itemDate >= previous7Start && itemDate < yesterday) {
+        groups["Previous 7 Days"].push(chat);
+      }
+    });
+
+    return groups;
+  };
 
   const handleSendMessage = async (content: string) => {
     if (!apiKey) {
@@ -133,20 +200,34 @@ export default function Home() {
     showToast(`Streaming mode ${!useStream ? "enabled" : "disabled"}`, "info", 2000);
   };
 
-  const handleSelectChat = (chatId: string) => {
+  const handleSelectChat = async (chatId: string) => {
+    console.log("chatId", chatId);
     setActiveChat(chatId);
+
+    const result :any= await chatService.getSingleChat(chatId);
+
+    console.log("result", result);
+
+    if (result?.messages) {
+     setMessages(result.messages);
+    }
     // In a real app, you would load the chat messages for this chat ID
   };
 
   const handleStartNewChat = () => {
     const newChatId = Date.now().toString();
-    const newChat: ChatHistoryItem = {
+    const newChat: ChatItem = {
       id: newChatId,
       title: "New conversation",
-      timestamp: new Date(),
+      updatedAt: new Date().toISOString(),
     };
     
-    setChatHistory([newChat, ...chatHistory]);
+    setChatHistory((prev) => ({
+      ...prev,
+      Today: [newChat, ...prev.Today],
+      Yesterday: [...prev.Yesterday],
+      "Previous 7 Days": [...prev["Previous 7 Days"]]
+    }));
     setActiveChat(newChatId);
     setMessages([]);
   };
@@ -160,37 +241,78 @@ export default function Home() {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  // Add logout handler
+  const handleLogout = async () => {
+    try {
+      await auth.logout();
+      router.push('/login');
+      showToast('Logged out successfully', 'success', 2000);
+    } catch (error) {
+      showToast('Failed to logout', 'error', 2000);
+    }
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-menu-container')) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   return (
     <div className="flex flex-col h-screen bg-[var(--app-bg)] text-[var(--app-text)]">
       {/* Top Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-[var(--app-header-border)] bg-[var(--app-header-bg)]">
-        <div className="flex items-center space-x-4">
+      <header className="flex items-center justify-between px-2 sm:px-4 py-3 border-b border-[var(--app-header-border)] bg-[var(--app-header-bg)]">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <button 
             onClick={toggleSidebar}
-            className="p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-500 transition-colors text-[var(--app-text)]"
+            className="p-1 rounded-full hover:bg-opacity-10 hover:bg-gray-500 transition-colors text-[var(--app-text)]"
+            title="Toggle sidebar"
           >
-            <Menu size={20} />
+            <Image 
+              src="/toggle.png"
+              alt="toggle-sidebar" 
+              width={24}
+              height={24}
+              priority
+              className={`transition-transform duration-200 ${!sidebarOpen ? 'rotate-180' : ''}`}
+            />
           </button>
           <button 
             onClick={handleStartNewChat}
-            className="p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-500 transition-colors text-[var(--app-text)]"
+            className="p-1 sm:p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-500 transition-colors text-[var(--app-text)]"
+            title="Start new chat"
           >
-            <PlusCircle size={20} />
+            <Image 
+              src="/new-chat.png"
+              alt="new-chat" 
+              width={24}
+              height={24}
+              priority
+            />
           </button>
           <div className="flex items-center">
-            <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded p-1 mr-2">
-              <div className="w-6 h-6 flex items-center justify-center">
-                <span className="text-white font-bold">AI</span>
-              </div>
-            </div>
+            <Image 
+              src="/logo.png"
+              alt="logo" 
+              width={28}
+              height={28}
+              priority
+              className="mr-2"
+            />
             <span className="font-semibold text-lg text-[var(--app-text)]">EnterpriseGPT</span>
           </div>
         </div>
         
-        <div className="flex items-center space-x-3">
-          {/* API Key Input */}
+        <div className="flex items-center space-x-1 sm:space-x-3">
           {showApiKeyInput && (
-            <form onSubmit={handleApiKeySubmit} className="flex items-center">
+            <form onSubmit={handleApiKeySubmit} className="hidden sm:flex items-center">
               <input
                 type="password"
                 value={apiKey}
@@ -207,64 +329,117 @@ export default function Home() {
             </form>
           )}
           
-          {/* API Key Button */}
           {!showApiKeyInput && (
             <button 
               onClick={() => setShowApiKeyInput(true)}
-              className="text-xs px-3 py-1 rounded-full bg-[var(--app-message-bg)] hover:bg-opacity-80 text-[var(--app-text)]"
+              className="hidden sm:block text-xs px-3 py-1 rounded-full bg-[var(--app-message-bg)] hover:bg-opacity-80 text-[var(--app-text)]"
             >
               API Key
             </button>
           )}
           
-          {/* Stream Toggle */}
-          <div className="flex items-center space-x-2">
+          <div className="hidden sm:flex items-center space-x-2">
             <span className="text-xs text-[var(--app-text)] opacity-70">Stream</span>
-            <div 
+            <button 
               className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--app-button-bg)] ${useStream ? 'bg-[var(--app-button-bg)]' : 'bg-gray-600'}`}
               onClick={toggleStreamMode}
               role="switch"
-              aria-checked={useStream}
-              tabIndex={0}
+              aria-checked={useStream ? "true" : "false"}
+              title="Toggle streaming mode"
             >
               <span
                 className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${useStream ? 'translate-x-6' : 'translate-x-1'}`}
               />
-            </div>
-          </div>
-          
-          {/* Theme Toggle */}
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={toggleTheme}
-              className="p-2 rounded-full bg-[var(--app-message-bg)] hover:bg-opacity-80 text-[var(--app-text)]"
-              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
           </div>
           
-          {/* Profile Button */}
-          <button className="p-2 bg-[var(--app-button-bg)] rounded-full hover:opacity-90 transition-colors">
-            <User size={20} className="text-white" />
+          <button 
+            onClick={toggleTheme}
+            className="hidden sm:block p-1 sm:p-2 rounded-full bg-[var(--app-message-bg)] hover:bg-opacity-80 text-[var(--app-text)]"
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
+          
+          <div className="relative user-menu-container">
+            <button 
+              className="p-1 sm:p-2 bg-[var(--app-button-bg)] rounded-full hover:opacity-90 transition-colors"
+              title="User profile"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowUserMenu(!showUserMenu);
+              }}
+            >
+              <Image 
+                src="/profile.png"
+                alt="profile" 
+                width={24}
+                height={24}
+                priority
+              />
+            </button>
+            
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-[var(--app-bg)] border border-[var(--app-header-border)] z-50">
+                <div className="py-1">
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-4 py-2 text-sm text-[var(--app-text)] hover:bg-[var(--app-message-bg)]"
+                  >
+                    <LogOut size={16} className="mr-2" />
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        {sidebarOpen && (
-          <ChatHistorySidebar 
-            chatHistory={chatHistory}
-            activeChat={activeChat}
-            sidebarOpen={sidebarOpen}
-            onSelectChat={handleSelectChat}
-            onStartNewChat={handleStartNewChat}
-          />
-        )}
+        <ChatHistorySidebar 
+          chatHistory={chatHistory}
+          activeChat={activeChat}
+          sidebarOpen={sidebarOpen}
+          onSelectChat={handleSelectChat}
+          onStartNewChat={handleStartNewChat}
+          onToggleSidebar={toggleSidebar}
+        >
+          {/* Add theme toggle to sidebar footer for mobile */}
+          <div className="p-3 sm:p-4 border-t border-[var(--app-sidebar-border)]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[var(--app-button-bg)] flex items-center justify-center mr-2">
+                  <span className="text-white font-medium text-xs sm:text-sm">JD</span>
+                </div>
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-[var(--app-text)]">John Doe</p>
+                  <p className="text-[10px] sm:text-xs text-[var(--app-text)] opacity-50">Free Plan</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={toggleTheme}
+                  className="sm:hidden p-2 rounded-full bg-[var(--app-message-bg)] hover:bg-opacity-80 text-[var(--app-text)]"
+                  aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                >
+                  {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                </button>
+                <button 
+                  className="text-[var(--app-text)] opacity-70 hover:opacity-100"
+                  title="Edit profile"
+                >
+                  <Edit2 size={12} className="sm:hidden" />
+                  <Edit2 size={14} className="hidden sm:block" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </ChatHistorySidebar>
         
         {/* Main Content */}
-        <main className="flex-1 flex flex-col">
+        <main className={`flex-1 flex flex-col relative ${sidebarOpen ? 'sm:ml-0' : 'ml-0'}`}>
           <div className="flex-1 overflow-hidden">
             <ChatWindow 
               messages={messages}
