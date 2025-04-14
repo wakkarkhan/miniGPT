@@ -194,6 +194,7 @@ body {
   --app-input-bg: #2d2e3a;
   --app-button-bg: #7957f8;
   --app-button-hover: #6947e8;
+  --app-button-gradient: linear-gradient(126.6deg, rgba(167, 9, 253, 0.9) 3.26%, rgba(76, 198, 255, 0.9) 92.22%);
 }
 
 .light {
@@ -208,4 +209,5 @@ body {
   --app-input-bg: #ffffff;
   --app-button-bg: #7957f8;
   --app-button-hover: #6947e8;
+  --app-button-gradient: linear-gradient(126.6deg, rgba(167, 9, 253, 0.9) 3.26%, rgba(76, 198, 255, 0.9) 92.22%);
 }

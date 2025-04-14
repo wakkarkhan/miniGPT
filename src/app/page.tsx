@@ -407,9 +407,9 @@ export default function Home() {
           onToggleSidebar={toggleSidebar}
         >
           {/* Add theme toggle to sidebar footer for mobile */}
-          <div className="p-3 sm:p-4 border-t border-[var(--app-sidebar-border)]">
+          {/* <div className="p-3 sm:p-4 border-t border-[var(--app-sidebar-border)]"> */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
+              {/* <div className="flex items-center">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[var(--app-button-bg)] flex items-center justify-center mr-2">
                   <span className="text-white font-medium text-xs sm:text-sm">JD</span>
                 </div>
@@ -417,8 +417,8 @@ export default function Home() {
                   <p className="text-xs sm:text-sm font-medium text-[var(--app-text)]">John Doe</p>
                   <p className="text-[10px] sm:text-xs text-[var(--app-text)] opacity-50">Free Plan</p>
                 </div>
-              </div>
-              <div className="flex items-center space-x-2">
+              </div> */}
+              {/* <div className="flex items-center space-x-2"> */}
                 <button 
                   onClick={toggleTheme}
                   className="sm:hidden p-2 rounded-full bg-[var(--app-message-bg)] hover:bg-opacity-80 text-[var(--app-text)]"
@@ -426,15 +426,15 @@ export default function Home() {
                 >
                   {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
                 </button>
-                <button 
+                {/* <button 
                   className="text-[var(--app-text)] opacity-70 hover:opacity-100"
                   title="Edit profile"
                 >
                   <Edit2 size={12} className="sm:hidden" />
                   <Edit2 size={14} className="hidden sm:block" />
-                </button>
-              </div>
-            </div>
+                </button> */}
+              {/* </div> */}
+            {/* </div> */}
           </div>
         </ChatHistorySidebar>
         
