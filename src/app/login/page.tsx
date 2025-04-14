@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { auth } from '@/services/auth';
 import { useToast } from '@/components/toast-context';
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function LoginPage() {
   useAuth(false) // false means don't require auth for this page
 
   const handleAADLogin = async (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent default button behavior
+    e.preventDefault();
     setIsLoading(true);
     try {
       await auth.login();
@@ -28,35 +29,35 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-  
 
   return (
     <div className="min-h-screen bg-[#0a0a1b] flex flex-col items-center justify-center p-4">
-      {/* Logo and Title */}
-      <div className="mb-8 flex items-center">
-        <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded p-2 mr-3">
-          <div className="w-8 h-8 flex items-center justify-center">
-            <span className="text-white font-bold text-xl">//</span>
-          </div>
-        </div>
-        <h1 className="text-white text-2xl font-bold">EnterpriseGPT</h1>
+      {/* Logo and Title - Moved to top-left */}
+      <div className="absolute top-8 left-8 flex items-center gap-2">
+        <Image 
+          src="/logo.png"
+          alt="Logo"
+          width={32}
+          height={32}
+          priority
+        />
+        <span className="text-white text-xl font-medium">EnterpriseGPT</span>
       </div>
 
       {/* Login Container */}
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-white mb-2">Log In</h2>
+          <h2 className="text-4xl font-bold text-white mb-2">Log In</h2>
           <p className="text-gray-400">Please login to your account</p>
         </div>
 
         {/* Login Button */}
         <button
-          type="button"
           onClick={handleAADLogin}
           disabled={isLoading}
-          className={`w-full bg-[#2d2e3a] hover:bg-[#3d3e4a] text-white rounded-lg px-4 py-3 flex items-center justify-center space-x-3 transition-colors ${
-            isLoading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+          className={`w-full bg-[#2d2e3a] hover:bg-[#3d3e4a] text-white rounded-lg px-4 py-3 
+                     flex items-center justify-center space-x-3 transition-colors 
+                     ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <div className="w-6 h-6 rounded-md bg-[#0078d4] flex items-center justify-center">
             {isLoading ? (
