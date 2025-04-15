@@ -19,6 +19,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await auth.login();
+        // window.location.href = `${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}/api/auth/login`;
     } catch (error) {
       console.error('Login failed:', error);
       showToast(

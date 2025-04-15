@@ -9,6 +9,7 @@ export const useAuth = (requireAuth = true) => {
     if (typeof window === 'undefined') return
 
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzOTY1ODQyNC1mZmNlLTQzZTUtOWUxYy0xMjAyNjFiYWFhNDQiLCJleHAiOjE3NDY0MDg0Nzd9.53T4W0Dqzq-XEj2LCO7VRZZsgs44rOTw3B5TJYMn_Yk"
+    // const token = localStorage.getItem('token')
     const isLoginPage = pathname === '/login'
 
     console.log("token", token)     

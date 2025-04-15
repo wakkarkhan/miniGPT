@@ -3,17 +3,22 @@ import { MarkdownRenderer } from './MarkdownRenderer';
 import { Message } from '@/components/MessageBubble';
 import { ArrowUp, User, Check } from 'lucide-react';
 import { useToast } from '@/components/toast-context';
+import { log } from 'node:console';
 
 interface ChatWindowProps {
   messages: Message[];
   isLoading: boolean;
   onSendMessage: (message: string) => void;
+  giveFeedback: (messageId: string, feedback: string) => void;
+  isTyping:boolean
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ 
   messages, 
   isLoading, 
-  onSendMessage
+  onSendMessage,
+  giveFeedback,
+  isTyping
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputMessage, setInputMessage] = useState("");
@@ -26,10 +31,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   useEffect(() => {
     scrollToBottom();
+    console.log("messages==>",messages);
   }, [messages]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    scrollToBottom()
     if (!inputMessage.trim() || isLoading) return;
     
     onSendMessage(inputMessage);
@@ -65,12 +72,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             </div>
           </div>
         ) : (
-          messages.map((message, index) => {
+          messages.map((message:any, index) => {
             const messageId = message.id || `msg-${index}`;
             return (
               <div key={messageId} className="animate-fadeIn">
-                <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-1`}>
-                  {message.role === 'assistant' && (
+                <div className={`flex ${!message?.isBot ? 'justify-end' : 'justify-start'} mb-1`}>
+                  {message.isBot && (
                     <div className="mr-2 sm:mr-3 mt-1">
                       <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#7957f8] flex items-center justify-center">
                         <svg 
@@ -94,11 +101,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     </div>
                   )}
                   <div className={`max-w-[85vw] sm:max-w-3xl rounded-lg px-3 sm:px-4 py-2 ${
-                    message.role === 'user' 
+                    !message?.isBot 
                       ? 'bg-[var(--app-user-message-bg)] text-white' 
                       : 'bg-[var(--app-message-bg)] text-[var(--app-text)]'
                   }`}>
-                    {message.role === 'assistant' ? (
+                    {message?.isBot ? (
                       <div className="text-[var(--app-text)] text-sm sm:text-base">
                         <MarkdownRenderer content={message.content} />
                       </div>
@@ -106,7 +113,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                       <p className="text-sm sm:text-base">{message.content}</p>
                     )}
                   </div>
-                  {message.role === 'user' && (
+                  {!message?.isBot && (
                     <div className="ml-2 sm:ml-3 mt-1">
                       <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-500 flex items-center justify-center">
                         <User size={16} className="text-white sm:hidden" />
@@ -117,10 +124,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 </div>
                 
                 {/* Message actions for assistant messages */}
-                {message.role === 'assistant' && (
+                {message?.isBot && (
                   <div className="flex ml-8 sm:ml-11 mt-1 space-x-2">
                     <button 
-                      className="text-[var(--app-text)] opacity-60 hover:opacity-100 flex items-center"
+                      className={`text-[var(--app-text)] opacity-60  flex items-center disabled:opacity-30`}
                       onClick={() => copyToClipboard(message.content, messageId)}
                       title="Copy to clipboard"
                     >
@@ -145,9 +152,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                       </div>
                     </button>
                     <button 
-                      className="text-[var(--app-text)] opacity-60 hover:opacity-100"
+                      disabled= {message.feedback !== 'NEUTRAL'}
+                      className={`text-[var(--app-text)] opacity-60 disabled:opacity-30  ${message.feedback == 'NEUTRAL'? ' hover:opacity-100 ': '' } disabled:opacity-30`}
                       title="Like message"
-                    >
+                      onClick={()=>giveFeedback(messageId,'POSITIVE')}
+                    > 
+                    { message.feedback == 'POSITIVE' ?
+                      <div className="relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:hidden">
+                          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hidden sm:block">
+                          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                        </svg>
+                      </div>
+                      :
                       <div className="relative">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:hidden">
                           <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
@@ -156,11 +175,25 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                           <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                         </svg>
                       </div>
+                     
+                    }
                     </button>
                     <button 
-                      className="text-[var(--app-text)] opacity-60 hover:opacity-100"
+                      disabled= {message.feedback !== 'NEUTRAL'}
+                      className={`text-[var(--app-text)] opacity-60 disabled:opacity-30 ${message.feedback !== 'NEUTRAL'? ' hover:opacity-100 ': '' }`}
                       title="Dislike message"
+                      onClick={()=>giveFeedback(messageId,'NEGATIVE')}
                     >
+                      {message.feedback == 'NEGATIVE' ?
+                      <div className="relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:hidden">
+                          <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hidden sm:block">
+                          <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+                        </svg>
+                      </div>
+                      :
                       <div className="relative">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:hidden">
                           <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
@@ -169,6 +202,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                           <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
                         </svg>
                       </div>
+                      }
                     </button>
                   </div>
                 )}
