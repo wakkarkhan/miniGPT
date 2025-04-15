@@ -603,6 +603,7 @@ export default function Home() {
                 e.stopPropagation();
                 setShowUserMenu(!showUserMenu);
               }}
+              style={{ background: 'var(--app-button-gradient)'}}
             >
               <Image
                 src="/profile.png"

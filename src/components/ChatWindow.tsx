@@ -79,7 +79,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 <div className={`flex ${!message?.isBot ? 'justify-end' : 'justify-start'} mb-1`}>
                   {message.isBot && (
                     <div className="mr-2 sm:mr-3 mt-1">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#7957f8] flex items-center justify-center">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center"  style={{ background: 'var(--app-button-gradient)'}}>
                         <svg 
                           xmlns="http://www.w3.org/2000/svg" 
                           viewBox="0 0 24 24" 
@@ -115,7 +115,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   </div>
                   {!message?.isBot && (
                     <div className="ml-2 sm:ml-3 mt-1">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-500 flex items-center justify-center">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-500 flex items-center justify-center"  style={{ background: 'var(--app-button-gradient)'}}>
                         <User size={16} className="text-white sm:hidden" />
                         <User size={18} className="text-white hidden sm:block" />
                       </div>

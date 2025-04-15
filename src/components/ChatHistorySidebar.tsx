@@ -100,7 +100,7 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
       <div 
         className={`fixed sm:relative inset-y-0 left-0 z-30 w-72 bg-[var(--app-sidebar-bg)] border-r border-[var(--app-sidebar-border)] 
                    transform transition-transform duration-300 ease-in-out
-                   ${sidebarOpen ? 'translate-x-0' : '-translate-x-full sm:-translate-x-72'}`}
+                   ${sidebarOpen ? 'translate-x-0' : '-translate-x-full sm:-translate-x-72 w-[0px]'}`}
       >
         {/* Sidebar content */}
         <div className="flex flex-col h-full">
